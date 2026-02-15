@@ -33,14 +33,18 @@ export class Game {
     this.poseOk = false;
     this.armLevel = 0.5;
     this.smooth = 0.18;
+    this.joints = null;
+    this.elbowAngles = null;
 
     this._lastTs = 0;
   }
 
-  setPoseControl({ ok, level, smooth }) {
+  setPoseControl({ ok, level, smooth, joints, elbowAngles }) {
     this.poseOk = !!ok;
     if (ok) this.armLevel = level;
     this.smooth = smooth;
+    this.joints = joints;
+    this.elbowAngles = elbowAngles;
   }
 
   start() {
@@ -82,8 +86,6 @@ export class Game {
     if (this.bird.y - this.bird.r < 0) this.bird.y = this.bird.r;
     if (this.bird.y + this.bird.r > this.GROUND) {
       this.bird.y = this.GROUND - this.bird.r;
-      this.gameOver();
-      return;
     }
 
     // move pipes and collisions
@@ -104,10 +106,14 @@ export class Game {
       const topRect = { x: p.x, y: 0, w: this.pipes.PIPE_W, h: gapTop };
       const botRect = { x: p.x, y: gapBottom, w: this.pipes.PIPE_W, h: this.GROUND - gapBottom };
 
-      if (
-        circleRectCollide(this.bird.x, this.bird.y, this.bird.r, topRect.x, topRect.y, topRect.w, topRect.h) ||
-        circleRectCollide(this.bird.x, this.bird.y, this.bird.r, botRect.x, botRect.y, botRect.w, botRect.h)
-      ) {
+      // Check collision with upper pipe only if it's a bottom-gap pipe (has upper pipe)
+      if (!p.isTopGap && circleRectCollide(this.bird.x, this.bird.y, this.bird.r, topRect.x, topRect.y, topRect.w, topRect.h)) {
+        this.gameOver();
+        return;
+      }
+
+      // Check collision with lower pipe only if it's a top-gap pipe (has lower pipe)
+      if (p.isTopGap && circleRectCollide(this.bird.x, this.bird.y, this.bird.r, botRect.x, botRect.y, botRect.w, botRect.h)) {
         this.gameOver();
         return;
       }
@@ -122,6 +128,8 @@ export class Game {
       pipes: this.pipes,
       score: this.score,
       armLevel: this.armLevel,
+      joints: this.joints,
+      elbowAngles: this.elbowAngles,
     });
   }
 

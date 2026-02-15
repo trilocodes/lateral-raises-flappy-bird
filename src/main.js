@@ -1,6 +1,7 @@
 console.log("main.js loaded");
 import { Game } from "./game/Game.js";
 import { PoseController } from "./vision/PoseController.js";
+import { CameraOverlay } from "./vision/CameraOverlay.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -11,11 +12,12 @@ const ui = {
   scoreEl: document.getElementById("score"),
   stateEl: document.getElementById("state"),
   armsEl: document.getElementById("arms"),
-  sensEl: document.getElementById("sens"),
-  smoothEl: document.getElementById("smooth"),
   videoEl: document.getElementById("video"),
   cameraStatus: document.getElementById("camera-status"),
+  skeletonCanvas: document.getElementById("skeleton-overlay"),
 };
+
+const cameraOverlay = new CameraOverlay(ui.skeletonCanvas, ui.videoEl);
 
 const game = new Game({
   canvas,
@@ -26,10 +28,12 @@ const game = new Game({
 
 const pose = new PoseController({
   videoEl: ui.videoEl,
-  getSensitivity: () => Number(ui.sensEl.value),
-  onArmLevel: ({ ok, level }) => {
+  getSensitivity: () => 0.6, // Fixed minimum sensitivity
+  onArmLevel: ({ ok, level, joints, elbowAngles, armAngles, bodyVector }) => {
     ui.armsEl.textContent = ok ? `${Math.round(level * 100)}%` : "not detected";
-    game.setPoseControl({ ok, level, smooth: Number(ui.smoothEl.value) });
+    game.setPoseControl({ ok, level, smooth: 0.35, joints, elbowAngles }); // Fixed maximum smoothness
+    // Draw skeleton on camera overlay
+    cameraOverlay.draw(joints, elbowAngles, armAngles, bodyVector);
   },
 });
 

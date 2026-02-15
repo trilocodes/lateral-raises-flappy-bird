@@ -6,7 +6,7 @@ export class Renderer {
     this.ground = ground;
   }
 
-  draw({ running, poseOk, bird, pipes, armLevel }) {
+  draw({ running, poseOk, bird, pipes, armLevel, joints, elbowAngles }) {
     const ctx = this.ctx;
 
     // background
@@ -37,12 +37,17 @@ export class Renderer {
       const gapTop = p.gapY;
       const gapBottom = p.gapY + pipes.PIPE_GAP;
 
-      ctx.fillRect(p.x, 0, pipes.PIPE_W, gapTop);
-      ctx.fillRect(p.x, gapBottom, pipes.PIPE_W, this.ground - gapBottom);
-
-      // lip
-      ctx.fillRect(p.x - 6, gapTop - 10, pipes.PIPE_W + 12, 10);
-      ctx.fillRect(p.x - 6, gapBottom, pipes.PIPE_W + 12, 10);
+      if (p.isTopGap) {
+        // Top gap: render only lower pipe, no upper pipe
+        ctx.fillRect(p.x, gapBottom, pipes.PIPE_W, this.ground - gapBottom);
+        // lip only at bottom
+        ctx.fillRect(p.x - 6, gapBottom, pipes.PIPE_W + 12, 10);
+      } else {
+        // Bottom gap: render only upper pipe, no lower pipe
+        ctx.fillRect(p.x, 0, pipes.PIPE_W, gapTop);
+        // lip only at top
+        ctx.fillRect(p.x - 6, gapTop - 10, pipes.PIPE_W + 12, 10);
+      }
     }
 
     // bird
