@@ -12,6 +12,7 @@ export class PoseController {
     this.elbowAngles = null; // Store elbow angles
     this.armAngles = null; // Store arm-to-body angles
     this.bodyVector = null; // Store body vector for visualization
+    this.armMode = "multi";
 
     // MediaPipe Pose instance
     this.pose = new Pose({
@@ -60,6 +61,10 @@ export class PoseController {
     });
 
     this.camera = null;
+  }
+
+  setArmMode(mode) {
+    this.armMode = mode === "single" ? "single" : "multi";
   }
 
   isRunning() {
@@ -118,11 +123,9 @@ export class PoseController {
     const LW = landmarks[15], RW = landmarks[16];
     const LH = landmarks[23], RH = landmarks[24];
 
-    const ok =
-      LS.visibility > 0.25 &&
-      RS.visibility > 0.25 &&
-      LE.visibility > 0.15 &&
-      RE.visibility > 0.15;
+    const leftOk = LS.visibility > 0.25 && LE.visibility > 0.15;
+    const rightOk = RS.visibility > 0.25 && RE.visibility > 0.15;
+    const ok = this.armMode === "single" ? leftOk || rightOk : leftOk && rightOk;
 
     if (!ok) return { ok: false, level: 0.5 };
 
@@ -158,7 +161,9 @@ export class PoseController {
     const rightAngle = this._calculateAngle(verticalDown, rightArmVector);
 
     // Average the angles
-    const avgAngle = (leftAngle + rightAngle) / 2;
+    const avgAngle = this.armMode === "single"
+      ? (leftOk && rightOk ? Math.max(leftAngle, rightAngle) : leftOk ? leftAngle : rightAngle)
+      : (leftAngle + rightAngle) / 2;
 
     // Map angle to arm level: 0-90 degrees = 0-100%
     let level = avgAngle / 90;

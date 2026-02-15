@@ -8,22 +8,40 @@ const ctx = canvas.getContext("2d");
 
 const ui = {
   startBtn: document.getElementById("startBtn"),
-  resetBtn: document.getElementById("resetBtn"),
   scoreEl: document.getElementById("score"),
   stateEl: document.getElementById("state"),
   armsEl: document.getElementById("arms"),
   videoEl: document.getElementById("video"),
   cameraStatus: document.getElementById("camera-status"),
   skeletonCanvas: document.getElementById("skeleton-overlay"),
+  armModeInputs: Array.from(document.querySelectorAll("input[name='armMode']")),
 };
 
 const cameraOverlay = new CameraOverlay(ui.skeletonCanvas, ui.videoEl);
+
+let currentState = "idle";
 
 const game = new Game({
   canvas,
   ctx,
   onScore: (s) => (ui.scoreEl.textContent = String(s)),
-  onState: (st) => (ui.stateEl.textContent = st),
+  onState: (st) => {
+    currentState = st;
+    ui.stateEl.textContent = st;
+    if (st === "running") {
+      ui.startBtn.disabled = true;
+      ui.startBtn.classList.remove("glow");
+      ui.startBtn.textContent = "Running";
+    } else if (st === "game over") {
+      ui.startBtn.disabled = false;
+      ui.startBtn.classList.add("glow");
+      ui.startBtn.textContent = "Restart";
+    } else {
+      ui.startBtn.disabled = false;
+      ui.startBtn.classList.remove("glow");
+      ui.startBtn.textContent = "Start";
+    }
+  },
 });
 
 const pose = new PoseController({
@@ -31,18 +49,28 @@ const pose = new PoseController({
   getSensitivity: () => 0.6, // Fixed minimum sensitivity
   onArmLevel: ({ ok, level, joints, elbowAngles, armAngles, bodyVector }) => {
     ui.armsEl.textContent = ok ? `${Math.round(level * 100)}%` : "not detected";
-    game.setPoseControl({ ok, level, smooth: 0.35, joints, elbowAngles }); // Fixed maximum smoothness
+    game.setPoseControl({ ok, level, smooth: 1.0, joints, elbowAngles }); // Fixed maximum smoothness
     // Draw skeleton on camera overlay
     cameraOverlay.draw(joints, elbowAngles, armAngles, bodyVector);
   },
 });
 
-ui.resetBtn.addEventListener("click", () => {
-  game.stop();
-  game.reset();
+const getSelectedArmMode = () => {
+  const checked = ui.armModeInputs.find((input) => input.checked);
+  return checked ? checked.value : "multi";
+};
+
+pose.setArmMode(getSelectedArmMode());
+ui.armModeInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    pose.setArmMode(getSelectedArmMode());
+  });
 });
 
 ui.startBtn.addEventListener("click", async () => {
+  if (currentState === "game over") {
+    game.reset();
+  }
   if (!pose.isRunning()) {
     try {
       await pose.start();

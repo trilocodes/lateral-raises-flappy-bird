@@ -3,44 +3,262 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lateral Raise Flappy (Modular)</title>
+  <title>Flappy Workout</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />  
   <style>
-    body { margin: 0; background: #111; color: #eee; font-family: system-ui, Arial; }
-    .container { display: flex; gap: 20px; padding: 20px; height: 60vh; }
-    .left-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-    .right-panel { flex: 1; display: flex; align-items: flex-start; min-height: 400px; position: relative; }
-    .wrap { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-    canvas { width: 100%; height: auto; border-radius: 12px; background: #000; }
-    #skeleton-overlay { position: absolute; top: 0; left: 0; border-radius: 12px; background: transparent; pointer-events: none; }
+    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;700&display=swap');
+
+    :root {
+      --bg-1: #0c0f1d;
+      --bg-2: #141b2f;
+      --panel: #141a2a;
+      --panel-border: #2c3c66;
+      --accent: #39d98a;
+      --accent-2: #ffb74a;
+      --text: #eef2ff;
+      --muted: #b8c1e0;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Nunito", "Baloo 2", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1f2a4e 0%, rgba(31, 42, 78, 0) 60%),
+        radial-gradient(900px 600px at 90% 110%, #243a5a 0%, rgba(36, 58, 90, 0) 60%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 10px;
+      width: 100vw;
+      box-sizing: border-box;
+      max-width: 1560px;
+      margin: 0 auto;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+      min-height: 70vh;
+    }
+
+    .wrap { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+
+    .section {
+      background: var(--panel);
+      border: 2px dashed var(--panel-border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .split .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .section-title {
+      font-family: "Baloo 2", "Nunito", sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.4px;
+      color: var(--accent-2);
+      margin: 0 0 10px 0;
+      text-transform: uppercase;
+    }
+
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    button, input { padding: 10px 12px; border-radius: 10px; border: 1px solid #333; background:#1b1b1b; color:#eee; }
-    .pill { padding: 6px 10px; border-radius: 999px; border: 1px solid #333; background:#171717; }
-    .small { opacity: .85; font-size: 14px; }
-    video { width: 100%; height: auto; max-height: 100%; object-fit: cover; border-radius: 12px; background: #222; border: 2px solid #444; transform: scaleX(-1); }
+    .control-row { justify-content: flex-start; gap: 12px; }
+    .control-row > * { line-height: 1; }
+
+    button, input {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 2px solid #2c3c66;
+      background: linear-gradient(180deg, #1c2746, #141a2a);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 15px;
+      font-family: "Baloo 2", "Nunito", sans-serif;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .start-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+      border-color: #2c3c66;
+    }
+
+    .start-btn.glow {
+      border-color: var(--accent);
+      box-shadow: 0 0 18px rgba(57, 217, 138, 0.6);
+      background: linear-gradient(180deg, #1f3a2f, #15281f);
+    }
+
+    button:hover {
+      transform: translateY(-1px) scale(1.02);
+      border-color: var(--accent);
+      box-shadow: 0 8px 16px rgba(57, 217, 138, 0.15);
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid #2c3c66;
+      background: #0f1527;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 4px;
+      border-radius: 999px;
+      border: 2px dashed #2c3c66;
+      background: #0f1527;
+    }
+
+    .toggle-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .toggle-pill input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toggle-pill span {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 15px;
+      font-family: "Baloo 2", "Nunito", sans-serif;
+      cursor: pointer;
+    }
+
+    .toggle-pill input:checked + span {
+      color: #0b1b1a;
+      background: var(--accent);
+      border-color: #2ad57f;
+      box-shadow: 0 6px 14px rgba(57, 217, 138, 0.25);
+    }
+
+    .small { opacity: 0.9; font-size: 14px; color: var(--muted); }
+
+    .media-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      background: #0a0c16;
+      border: 2px solid #243a5a;
+      display: block;
+    }
+
+    .camera-panel { position: relative; height: 100%; }
+
+    #skeleton-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #0a0c16;
+      border: 2px solid #243a5a;
+      transform: scaleX(-1);
+      display: block;
+    }
+
+    .camera-status {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(12, 15, 29, 0.75);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 2px solid #243a5a;
+    }
+
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="left-panel">
-      <div class="wrap">
-        <div class="row">
-          <button id="startBtn">Start</button>
-          <button id="resetBtn">Reset</button>
-          <span class="pill">Score: <span id="score">0</span></span>
-          <span class="pill">State: <span id="state">idle</span></span>
-          <span class="pill">Arms: <span id="arms">--</span></span>
+    <div class="section">
+      <div class="section-title">Controls</div>
+      <div class="row control-row">
+        <button id="startBtn" class="start-btn">Start</button>
+        <div class="toggle-group" role="group" aria-label="Arm mode">
+          <label class="toggle-pill">
+            <input type="radio" name="armMode" value="multi" checked />
+            <span>Multi Arm</span>
+          </label>
+          <label class="toggle-pill">
+            <input type="radio" name="armMode" value="single" />
+            <span>Single Arm</span>
+          </label>
         </div>
-
-        <canvas id="game" width="980" height="550"></canvas>
-        <div class="small">Raise arms out to the sides. Higher arms = bird goes up.</div>
+        <span class="pill">Score: <span id="score">0</span></span>
+        <span class="pill">State: <span id="state">idle</span></span>
+        <span class="pill">Arms: <span id="arms">--</span></span>
       </div>
     </div>
 
-    <div class="right-panel">
-      <video id="video" playsinline autoplay muted></video>
-      <canvas id="skeleton-overlay"></canvas>
-      <div id="camera-status" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; font-size: 12px;">
-        Camera loading...
+    <div class="split">
+      <div class="section">
+        <div class="section-title">Game</div>
+        <div class="media-wrap">
+          <canvas id="game" width="980" height="550"></canvas>
+        </div>
+        <div class="small">Raise arms out to the sides. Higher arms = bird goes up.</div>
+      </div>
+
+      <div class="section camera-panel">
+        <div class="section-title">Camera</div>
+        <div class="media-wrap">
+          <video id="video" playsinline autoplay muted></video>
+          <canvas id="skeleton-overlay"></canvas>
+        </div>
+        <div id="camera-status" class="camera-status">Camera loading...</div>
       </div>
     </div>
   </div>
