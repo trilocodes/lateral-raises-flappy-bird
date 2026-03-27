@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flappy Workout</title>
+  <link rel="icon" type="image/png" href="/lateral-raises-flappy-bird/favicon.png" />
+  <script type="module" crossorigin src="/lateral-raises-flappy-bird/assets/index-BZ0C5aBI.js"></script>
+  <link rel="stylesheet" crossorigin href="/lateral-raises-flappy-bird/assets/index-Cy2lYFOn.css">
+</head>
+<body>
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">⚙️ Settings</div>
+      
+      <div class="setting-group">
+        <div class="setting-label">Speed</div>
+        <div class="button-group">
+          <button class="btn-option active" data-speed="slow">🐢 Slow</button>
+          <button class="btn-option" data-speed="medium">🚴 Medium</button>
+          <button class="btn-option" data-speed="fast">🚀 Fast</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label">Arm Mode</div>
+        <div class="arm-mode-group">
+          <button class="arm-btn active" data-arm="multi">Multi Arm</button>
+          <button class="arm-btn" data-arm="single">Single Arm</button>
+        </div>
+      </div>
+
+      <button class="btn-go" id="goBtn">GO!</button>
+    </div>
+  </div>
+
+  <!-- Game Countdown Overlay -->
+  <div id="gameCountdown" class="game-countdown" style="display: none;">
+    <div class="countdown-display">
+      <div>Starting in:</div>
+      <div class="countdown-number" id="gameCountdownNumber">5</div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameOverModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">🎮 Game Over</div>
+      <div style="font-size: 18px; color: var(--muted); text-align: center; margin-bottom: 15px;">Final Score</div>
+      <div class="game-over-score" id="finalScore">0</div>
+      <div class="game-over-buttons">
+        <button class="btn-play" id="playAgainBtn">Play Again</button>
+        <button class="btn-close" id="closeBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How To Play Modal -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">How To Play</div>
+      <div class="how-to-list">
+        <p>1. Click START and choose speed and arm mode.</p>
+        <p>2. Raise your arms to move the bird upward.</p>
+        <p>3. Lower your arms to move the bird downward.</p>
+        <p>4. Avoid the pipes and keep scoring points.</p>
+        <p>5. Use PAUSE or END anytime during play.</p>
+      </div>
+      <button class="btn-close how-to-close" id="closeHelpBtn">Close</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="top-row">
+      <div class="section logo-section">
+        <img src="/lateral-raises-flappy-bird/logo.png" alt="Flappy Bird Workout logo" class="side-logo" />
+      </div>
+
+      <div class="section controls-section">
+        <div class="section-title">Controls</div>
+        <div class="row control-row">
+          <div class="control-cluster">
+            <div class="control-buttons">
+              <button id="startBtn" class="start-btn">START</button>
+              <button id="endBtn" class="end-btn" disabled>END</button>
+            </div>
+            <button id="howToPlayBtn" class="help-control-btn" aria-label="How to play">?</button>
+          </div>
+          <div class="hud-pills">
+            <span class="pill">Score: <span id="score">0</span></span>
+            <span class="pill">State: <span id="state">idle</span></span>
+            <span class="pill">Arms: <span id="arms">--</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="section">
+        <div class="section-title">Game</div>
+        <div class="media-wrap">
+          <canvas id="game" width="980" height="550"></canvas>
+        </div>
+      </div>
+
+      <div class="section camera-panel">
+        <div class="section-title">Camera</div>
+        <div class="media-wrap">
+          <video id="video" playsinline autoplay muted></video>
+          <canvas id="skeleton-overlay"></canvas>
+        </div>
+        <div id="camera-status" class="camera-status">Camera loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+
+  <!-- App -->
+</body>
+</html>
