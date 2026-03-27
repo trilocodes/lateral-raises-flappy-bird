@@ -17,6 +17,7 @@ export class Game {
     this.onState = onState ?? (() => {});
 
     this.running = false;
+    this.paused = false;
     this.score = 0;
 
     this.bird = new Bird({ x: 220, y: 220, r: 18 });
@@ -47,13 +48,34 @@ export class Game {
     this.elbowAngles = elbowAngles;
   }
 
+  setSpeedConfig({ pipeGap, pipeSpeed }) {
+    this.pipes.PIPE_GAP = pipeGap;
+    this.pipes.SCROLL_SPEED = pipeSpeed;
+  }
+
   start() {
     this.running = true;
+    this.paused = false;
+    this.onState("running");
+  }
+
+  pause() {
+    if (!this.running) return;
+    this.running = false;
+    this.paused = true;
+    this.onState("paused");
+  }
+
+  resume() {
+    if (!this.paused) return;
+    this.running = true;
+    this.paused = false;
     this.onState("running");
   }
 
   stop() {
     this.running = false;
+    this.paused = false;
     this.onState("idle");
   }
 
@@ -64,11 +86,13 @@ export class Game {
     this.bird.reset(220);
     this.pipes.reset();
 
+    this.paused = false;
     this.onState(this.running ? "running" : "idle");
   }
 
   gameOver() {
     this.running = false;
+    this.paused = false;
     this.onState("game over");
   }
 

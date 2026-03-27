@@ -11,12 +11,15 @@ export class Renderer {
 
     // background
     ctx.clearRect(0, 0, this.W, this.H);
-    ctx.fillStyle = "#0b0b0b";
+    const skyGradient = ctx.createLinearGradient(0, 0, 0, this.H);
+    skyGradient.addColorStop(0, "#6cc7ff");
+    skyGradient.addColorStop(1, "#2d8de0");
+    ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, this.W, this.H);
 
     // subtle grid
-    ctx.globalAlpha = 0.12;
-    ctx.strokeStyle = "#ffffff";
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = "#dff2ff";
     for (let x = 0; x < this.W; x += 40) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.H); ctx.stroke();
     }
@@ -26,13 +29,13 @@ export class Renderer {
     ctx.globalAlpha = 1;
 
     // ground
-    ctx.fillStyle = "#141414";
+    ctx.fillStyle = "#2f8f3a";
     ctx.fillRect(0, this.ground, this.W, this.H - this.ground);
-    ctx.strokeStyle = "#2b2b2b";
+    ctx.strokeStyle = "#1f6a28";
     ctx.beginPath(); ctx.moveTo(0, this.ground); ctx.lineTo(this.W, this.ground); ctx.stroke();
 
     // pipes
-    ctx.fillStyle = "#d9d9d9";
+    ctx.fillStyle = "#2fb84a";
     for (const p of pipes.items) {
       const gapTop = p.gapY;
       const gapBottom = p.gapY + pipes.PIPE_GAP;
@@ -50,11 +53,40 @@ export class Renderer {
       }
     }
 
-    // bird
+    ctx.fillStyle = "#27973d";
+    for (const p of pipes.items) {
+      const gapTop = p.gapY;
+      const gapBottom = p.gapY + pipes.PIPE_GAP;
+
+      if (p.isTopGap) {
+        ctx.fillRect(p.x + pipes.PIPE_W - 10, gapBottom, 10, this.ground - gapBottom);
+      } else {
+        ctx.fillRect(p.x + pipes.PIPE_W - 10, 0, 10, gapTop);
+      }
+    }
+
+    // bird (cartoon yellow with brown side wing lines)
     ctx.beginPath();
     ctx.arc(bird.x, bird.y, bird.r, 0, Math.PI * 2);
-    ctx.fillStyle = poseOk ? "#ffffff" : "#777";
+    ctx.fillStyle = poseOk ? "#ffd93a" : "#c5a72f";
     ctx.fill();
+
+    // wing lines on either side
+    ctx.strokeStyle = "#7a4a1d";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(bird.x - bird.r + 4, bird.y - 5);
+    ctx.lineTo(bird.x - bird.r - 5, bird.y);
+    ctx.lineTo(bird.x - bird.r + 4, bird.y + 5);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(bird.x + bird.r - 4, bird.y - 5);
+    ctx.lineTo(bird.x + bird.r + 5, bird.y);
+    ctx.lineTo(bird.x + bird.r - 4, bird.y + 5);
+    ctx.stroke();
+
     ctx.beginPath();
     ctx.arc(bird.x + 6, bird.y - 4, 3, 0, Math.PI * 2);
     ctx.fillStyle = "#000";

@@ -34,8 +34,9 @@ export class PipeManager {
   }
 
   update(dt) {
-    // dt exists if later you want framerate-independent speed
-    for (const p of this.items) p.x -= this.SCROLL_SPEED;
+    // Keep movement framerate-independent for smoother play.
+    const frameScale = Math.max(0.4, Math.min(2.2, dt / 16.6667));
+    for (const p of this.items) p.x -= this.SCROLL_SPEED * frameScale;
 
     // recycle
     if (this.items.length && this.items[0].x + this.PIPE_W < -10) {
